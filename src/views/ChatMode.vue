@@ -54,11 +54,20 @@ const scrollToBottom = async () => {
   }
 };
 
-// src/views/ChatMode.vue 逻辑修正
+// src/views/ChatMode.vue 内部的 onSend 函数
+
 const onSend = async () => {
   if (!input.value.trim() || isLoading.value) return;
 
   const text = input.value;
+
+  // 1. 先提取【过去】的历史记录（不含当前这一条）
+  const historyForAi = chatHistory.value.slice(-5).map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }]
+  }));
+
+  // 2. 然后再把当前消息显示在 UI 上
   chatHistory.value.push({ id: Date.now(), role: 'user', content: text });
 
   isLoading.value = true;
@@ -66,16 +75,11 @@ const onSend = async () => {
   await scrollToBottom();
 
   try {
-    // 关键修正：定义并提取对话历史
-    const historyForAi = chatHistory.value.slice(-5).map(m => ({
-      role: m.role,
-      content: m.content
-    }));
-
-    // 现在调用就不会报错了
+    // 3. 传递给 AI：过去的历史 + 当前的内容
+    // 注意：ai.js 内部已经做了角色映射，这里可以直接传简化后的数据
     const result = await AiService.chatAdaptive(historyForAi, text);
 
-    detectedLevel.value = result.detected_level; // 修正：使用 .value
+    detectedLevel.value = result.detected_level;
 
     chatHistory.value.push({
       id: Date.now() + 1,
@@ -88,7 +92,7 @@ const onSend = async () => {
     chatHistory.value.push({
       id: Date.now() + 2,
       role: 'assistant',
-      content: "Sorry, I'm having trouble connecting to the AI brain.",
+      content: "抱歉，由于 API Key 配置或网络问题，连接失败。",
       feedback: ''
     });
   } finally {

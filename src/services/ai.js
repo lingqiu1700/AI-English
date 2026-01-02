@@ -43,20 +43,15 @@ export const AiService = {
     /**
      * 自适应对话：调用代理
      */
+    // src/services/ai.js 部分代码
     async chatAdaptive(history, userInput) {
-        // 将 Vue 组件里的 history 转换为 Gemini SDK 要求的格式
-        const formattedHistory = history.map(h => ({
-            role: h.role === 'assistant' ? 'model' : 'user',
-            parts: [{ text: h.content }]
-        }));
-
+        // history 这里已经是 [{role: '...', parts: [...]}] 格式了，无需再次 map
         const prompt = `你是一个英语私教。根据输入推断水平(A1-C2)并回复。返回 JSON: {"reply": "...", "detected_level": "...", "feedback": "纠错建议"}`;
 
-        // mode 设置为 chat，云函数会处理 formattedHistory
         return this.callProxy({
             mode: "chat",
             prompt: userInput,
-            history: formattedHistory
+            history: history // 直接透传过去
         });
     }
 };
