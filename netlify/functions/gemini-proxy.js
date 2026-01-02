@@ -12,7 +12,7 @@ exports.handler = async (event, context) => {
 
         // 2. 从环境变量获取 Key (Netlify 控制台设置)
         const genAI = new GoogleGenAI({ apiKey: process.env.VITE_AI_API_KEY });
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         let responseText = "";
 
