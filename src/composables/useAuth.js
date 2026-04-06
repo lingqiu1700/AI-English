@@ -24,7 +24,7 @@ export function useAuth() {
         if (error) throw error
     }
 
-    //监听登录状态
+    //监听登录状态  &&  调用fetchProfile获取用户资料
     const initializeAuth = async () => {
         const {data: { session }} = await supabase.auth.getSession()
         currentUser.value = session?.user || null;
