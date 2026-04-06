@@ -1,0 +1,43 @@
+/* =========================================
+   全局主题变量池 (themes.css)
+   ========================================= */
+
+/* 默认：暗色主题 (Dark Theme) */
+:root {
+    --bg-app: #1e1e1e;           /* 应用最底层背景 */
+    --bg-sidebar: #252526;       /* 侧边栏背景 */
+    --bg-surface: #2d2d30;       /* 卡片、模块、输入框背景 */
+    --bg-user-msg: #3a3d41;      /* 用户聊天气泡背景 */
+
+    --text-main: rgba(255, 255, 255, 0.9); /* 主要文字 */
+    --text-muted: #aaaaaa;       /* 次要、说明文字 */
+
+    --border-color: #3e3e42;     /* 边框颜色 */
+
+    --primary-color: #42b883;    /* Vue 经典绿，作为品牌色 */
+    --primary-hover: #33a06f;
+}
+
+/* 切换：白天主题 (Light Theme) - 米白温和风格 */
+html[data-theme="light"] {
+    --bg-app: #ffffec;           /* 温和米白色背景 */
+    --bg-sidebar: #f5f5eb;       /* 侧边栏稍深一点的米白 */
+    --bg-surface: #ade1ea;       /* 卡片、功能模块为纯白 */
+    --bg-user-msg: #e3f2fd;      /* 用户气泡浅蓝色 */
+
+    --text-main: #333333;        /* 柔和的深灰文字 */
+    --text-muted: #777777;       /* 次要文字 */
+
+    --border-color: #e0e0e0;     /* 柔和的边框 */
+
+    --primary-color: #4a90e2;    /* 白天模式下换成温和的蓝色，或者保留绿色也可 */
+    --primary-hover: #357abd;
+}
+
+/* 基础重置 */
+body {
+    margin: 0;
+    background-color: var(--bg-app);
+    color: var(--text-main);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}

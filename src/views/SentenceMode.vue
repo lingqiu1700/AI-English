@@ -92,3 +92,72 @@ const onSend = async () => {
   }
 };
 </script>
+
+<style scoped>
+.msg-row {
+  margin-bottom: 20px;
+  display: flex;
+}
+.msg-row.user { justify-content: flex-end; }
+.bubble {
+  max-width: 70%;
+  padding: 12px 16px;
+  border-radius: 12px;
+}
+.user .bubble { background-color: var(--bg-user-msg); }
+.assistant .bubble { background-color: var(--bg-surface); border: 1px solid var(--border-color); }
+
+/* 句子解析专属卡片 */
+.sentence-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  width: 100%;
+  max-width: 700px;
+}
+
+.section {
+  margin-bottom: 15px;
+}
+
+.section label {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.trans-text {
+  font-size: 1.1em;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.structure-code {
+  display: block;
+  background-color: rgba(0,0,0,0.1);
+  padding: 10px;
+  border-radius: 6px;
+  font-family: monospace;
+  color: var(--text-main);
+}
+html[data-theme="light"] .structure-code {
+  background-color: #f4f4f4; /* 白天模式代码块背景 */
+}
+
+.grammar-list {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text-main);
+}
+
+.private-note-box {
+  margin-top: 15px;
+  padding: 10px;
+  border-left: 4px solid var(--primary-color);
+  background-color: var(--bg-app);
+}
+</style>

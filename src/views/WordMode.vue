@@ -87,3 +87,66 @@ const onSend = async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.msg-row {
+  margin-bottom: 20px;
+  display: flex;
+  padding-top: 20px;
+  padding-left: 10px;
+}
+
+.msg-row.user {
+  justify-content: flex-end;
+}
+
+.bubble {
+  max-width: 70%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  line-height: 1.5;
+}
+
+.user .bubble {
+  background-color: var(--bg-user-msg);
+  color: var(--text-main);
+}
+
+.assistant .bubble {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+}
+
+/* 单词专属卡片 */
+.card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.card h2 {
+  margin-top: 0;
+  color: var(--primary-color) !important;
+}
+
+.content-section {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px dashed var(--border-color);
+}
+
+.mnemonic-box {
+  background-color: rgba(66, 184, 131, 0.05);
+  border: 1px solid rgba(66, 184, 131, 0.2);
+  color: var(--text-main);
+}
+/* 白天模式下的特殊适配 */
+html[data-theme="light"] .mnemonic-box {
+  background-color: #f9f9f9;
+  border-color: #eeeeee;
+}
+</style>

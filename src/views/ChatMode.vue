@@ -35,6 +35,7 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref, nextTick } from 'vue';
 import { AiService } from '../services/ai.js';
@@ -101,3 +102,4 @@ const onSend = async () => {
   }
 };
 </script>
+
