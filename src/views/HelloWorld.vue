@@ -5,12 +5,14 @@ defineProps({
   msg: String,
 })
 
+const sb = ref('傻逼')
+
 const count = ref(0)
 </script>
 
 <template>
   <h1>{{ msg }}</h1>
-
+  <p>{{sb}}</p>
   <div class="card">
     <button type="button" @click="count++">count is {{ count }}</button>
     <p>

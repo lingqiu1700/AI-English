@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
-import { AiService } from '../services/ai.js'; //
+import { AiService } from '../services/ai.js';
+import { userProfile } from '../composables/useAuth';
 
 const input = ref('');
 const isLoading = ref(false);
@@ -29,7 +30,8 @@ const onSend = async () => {
 
   try {
     const dictData = await fetchStandardDict(word);
-    const aiResult = await AiService.analyzeWord(word, dictData); //
+    const currentLevel = userProfile.value?.english_level || 'A1';
+    const aiResult = await AiService.analyzeWord(word, dictData, currentLevel);
 
     chatHistory.value.push({
       id: Date.now() + 1,

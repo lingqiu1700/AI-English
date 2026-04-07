@@ -39,6 +39,7 @@
 <script setup>
 import { ref, nextTick } from 'vue';
 import { AiService } from '../services/ai.js';
+import { userProfile } from '../composables/useAuth';
 
 const input = ref('');
 const isLoading = ref(false);
@@ -78,7 +79,8 @@ const onSend = async () => {
   try {
     // 3. 传递给 AI：过去的历史 + 当前的内容
     // 注意：ai.js 内部已经做了角色映射，这里可以直接传简化后的数据
-    const result = await AiService.chatAdaptive(historyForAi, text);
+    const currentLevel = userProfile.value?.english_level || 'A1'; // 获取等级
+    const result = await AiService.chatAdaptive(historyForAi, text, currentLevel);
 
     detectedLevel.value = result.detected_level;
 

@@ -55,6 +55,7 @@
 <script setup>
 import { ref } from 'vue';
 import { AiService } from '../services/ai.js';
+import { userProfile } from '../composables/useAuth';
 
 const input = ref('');
 const isLoading = ref(false);
@@ -73,7 +74,8 @@ const onSend = async () => {
 
   try {
     // 调用 Gemini 进行句子分析
-    const result = await AiService.analyzeSentence(sentence);
+    const currentLevel = userProfile.value?.english_level || 'A1'; // 获取等级
+    const result = await AiService.analyzeSentence(sentence, currentLevel);
 
     chatHistory.value.push({
       id: Date.now() + 1,
