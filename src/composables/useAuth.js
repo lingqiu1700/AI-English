@@ -2,6 +2,7 @@ import {ref} from 'vue'
 import {supabase} from "../services/supabase.js";
 
 export const currentUser = ref(null)
+export const userProfile = ref(null)
 
 export function useAuth() {
     //注册
