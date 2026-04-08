@@ -2,50 +2,65 @@
 const { GoogleGenAI } = require("@google/genai");
 
 exports.handler = async (event) => {
-
-    const { mode, prompt, history, level = 'A1' } = JSON.parse(event.body);
-
-    // 核心逻辑：根据等级定制 System Instruction
-    const levelConfigs = {
-        'A1': "用户是初学者。请使用最简单的英语，大量使用中文解释。例句要短，避开复杂语法。",
-        'A2': "用户有一定基础。解释力求清晰，中英结合。介绍基础搭配。",
-        'B1': "用户中等水平。增加英文解释比例，介绍地道用法和短语，例句中包含 1-2 个进阶词汇。",
-        'B2': "用户水平较好。主要使用英文解释，探讨词汇的语境差异和正式度，例句要符合商务或学术场景。",
-        'C1': "用户专业水平。完全使用英文解析，重点在于细微差别（Nuance）、词源和高阶文学/专业用法。",
-        'C2': "用户母语级水平。进行深度的语言学或专业领域探讨，挑战其词汇边界。"
-    };
-
-    const baseInstruction = `你是一个英语私教。
-    当前用户等级：${level}。要求：${levelConfigs[level]}。
-    始终返回 JSON 格式：{ "reply/data": "...", ... }`;
-
-
-    if (event.httpMethod !== "POST") return { statusCode: 405, body: "Method Not Allowed" };
+    // 1. 基础检查：仅允许 POST
+    if (event.httpMethod !== "POST") {
+        return { statusCode: 405, body: "Method Not Allowed" };
+    }
 
     try {
-        const { mode, prompt, history, level = 'A1' } = JSON.parse(event.body);
-        const apiKey = process.env.VITE_AI_API_KEY;
+        // 2. 解析请求体
+        const body = JSON.parse(event.body || "{}");
+        const { mode, prompt, history = [], level = 'A1' } = body;
 
+        const apiKey = process.env.VITE_AI_API_KEY;
         if (!apiKey) {
-            return { statusCode: 500, body: JSON.stringify({ data: "Error: API Key 缺失。请在 Netlify 后台配置 VITE_AI_API_KEY。" }) };
+            return { statusCode: 500, body: JSON.stringify({ data: "Error: Netlify 环境变量 VITE_AI_API_KEY 缺失" }) };
         }
 
+        // 3. 初始化 SDK
         const ai = new GoogleGenAI({ apiKey });
 
+        // 4. 定制化等级指令
+        const levelConfigs = {
+            'A1': "用户是初学者(A1)。请使用最简单的英语，配合大量中文解释。例句极简。",
+            'A2': "用户初级水平(A2)。解释清晰，中英结合，介绍基础短语。",
+            'B1': "用户中等水平(B1)。增加英文比例，介绍地道用法和中级词汇。",
+            'B2': "用户中高级水平(B2)。主要用英文解释，探讨语境差异，例句商务化。",
+            'C1': "用户高级水平(C1)。完全用英文解析，强调细微差别和学术用法。",
+            'C2': "用户母语级水平(C2)。进行深度的语言学解析。"
+        };
+
+        const systemInstruction = `你是一个英语私教。
+        当前用户等级：${level}。教学要求：${levelConfigs[level] || levelConfigs['A1']}。
+        请始终返回纯 JSON 格式：{"reply": "...", "data": "...", "feedback": "..."}`;
+
+        // 5. 调用 Gemini (注意这里直接使用 ai.models.generateContent，不再定义多余变量)
         let result;
+        const generationConfig = { responseMimeType: "application/json" };
+        const modelName = "gemini-2.5-flash"; // 你确认过的可用模型
+
         if (mode === "chat") {
-            result = await model.generateContent({
-                contents: [...history, { role: "user", parts: [{ text: prompt }] }],
-                generationConfig: { responseMimeType: "application/json" }
+            // 对话模式
+            result = await ai.models.generateContent({
+                model: modelName,
+                systemInstruction: systemInstruction,
+                contents: [
+                    ...history,
+                    { role: "user", parts: [{ text: prompt }] }
+                ],
+                generationConfig
             });
         } else {
-            // 修正点：非对话模式也必须带上 generationConfig，否则不会返回 JSON
-            result = await model.generateContent({
+            // 单词/句子分析模式
+            result = await ai.models.generateContent({
+                model: modelName,
+                systemInstruction: systemInstruction,
                 contents: [{ role: "user", parts: [{ text: prompt }] }],
-                generationConfig: { responseMimeType: "application/json" }
+                generationConfig
             });
         }
 
+        // 6. 返回结果
         return {
             statusCode: 200,
             headers: { "Content-Type": "application/json" },
