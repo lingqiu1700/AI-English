@@ -1,6 +1,7 @@
 // src/services/ai.js
 
 export const AiService = {
+
     async callProxy(payload) {
         const res = await fetch("/.netlify/functions/gemini-proxy", {
             method: "POST",
