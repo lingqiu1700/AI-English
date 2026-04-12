@@ -34,10 +34,10 @@ exports.handler = async (event) => {
         当前用户等级：${level}。教学要求：${levelConfigs[level] || levelConfigs['A1']}。
         请始终返回纯 JSON 格式：{"reply": "...", "data": "...", "feedback": "..."}`;
 
-        // 5. 调用 Gemini (注意这里直接使用 ai.models.generateContent，不再定义多余变量)
+        // 5. 调用 Gemini
         let result;
         const generationConfig = { responseMimeType: "application/json" };
-        const modelName = "gemini-2.5-flash"; // 你确认过的可用模型
+        const modelName = "gemini-2.5-flash-lite"; // 模型
 
         if (mode === "chat") {
             // 对话模式
