@@ -2,14 +2,15 @@
 
 export const AiService = {
     // 核心逻辑：带重试机制的请求
-    async callProxy(payload, useFallback = true) {
+    async callProxy(payload, useFallback = true, signal = null) {
         const currentProvider = payload.provider || localStorage.getItem('ai_provider') || 'gemini';
 
         try {
             const res = await fetch("/.netlify/functions/ai-proxy", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...payload, provider: currentProvider })
+                body: JSON.stringify({ ...payload, provider: currentProvider }),
+                signal: signal
             });
 
             // 如果 Gemini 报错 (503/500/429) 且允许重试
@@ -46,14 +47,14 @@ export const AiService = {
 
     // 以下方法保持接口不变，内部逻辑自动享受自动切换
     async analyzeWord(word, dictData, level = 'A1') {
-        return this.callProxy({ mode: "analyze", prompt: `分析单词: ${word}`, level });
+        return this.callProxy({ mode: "word", prompt: `分析单词: ${word}`, level });
     },
 
     async analyzeSentence(sentence, level = 'A1') {
-        return this.callProxy({ mode: "analyze", prompt: `分析句子: ${sentence}`, level });
+        return this.callProxy({ mode: "sentence", prompt: `分析句子: ${sentence}`, level });
     },
 
-    async chatAdaptive(history, userInput, level = 'A1') {
-        return this.callProxy({ mode: "chat", prompt: userInput, history, level });
+    async chatAdaptive(history, userInput, level = 'A1', signal = null) {
+        return this.callProxy({ mode: "chat", prompt: userInput, history, level }, true, signal);
     }
 };

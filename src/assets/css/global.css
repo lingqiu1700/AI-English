@@ -1,21 +1,43 @@
-:root {
-    --bg-dark: #121212;
-    --sidebar-bg: #1e1e1e;
-    --primary-green: #42b883;
+/* src/assets/css/global.css */
+:root, [data-theme="dark"] {
+    --bg-app: #121212;
+    --bg-sidebar: #1e1e1e;
+    --bg-surface: #252525;
+    --primary-color: #42b883;
+    --primary-hover: #33a06f;
     --text-main: #e0e0e0;
     --text-muted: #888;
     --border-color: #333;
-    --card-bg: #252525;
+    --bg-user-msg: #2c3e50;
+    --transition-speed: 0.3s;
+}
+
+[data-theme="light"] {
+    --bg-app: #f5f7f9;
+    --bg-sidebar: #ffffff;
+    --bg-surface: #ffffff;
+    --primary-color: #42b883;
+    --primary-hover: #33a06f;
+    --text-main: #2c3e50;
+    --text-muted: #7f8c8d;
+    --border-color: #e0e4e8;
+    --bg-user-msg: #e8f5e9;
+}
+
+body {
+    background-color: var(--bg-app);
+    color: var(--text-main);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
+    box-sizing: border-box; /* 👈 关键：确保内边距不撑开容器 */
 }
 
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-dark);
-    color: var(--text-main);
+html, body, #app {
+    height: 100%;
+    width: 100%;
+    overflow: hidden; /* 👈 强制禁止最外层出现滚动条 */
 }

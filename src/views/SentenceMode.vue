@@ -32,7 +32,7 @@
       </div>
 
       <div v-if="isLoading" class="msg-row assistant">
-        <div class="bubble">Gemini 正在拆解语法结构...</div>
+        <div class="bubble typing">AI 正在拆解语法结构...</div>
       </div>
     </div>
 
@@ -53,63 +53,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { AiService } from '../services/ai.js';
-import { userProfile } from '../composables/useAuth';
-
-const input = ref('');
-const isLoading = ref(false);
-const chatHistory = ref([
-  { id: 1, role: 'assistant', content: '你好！发给我一个长句子，我会为你拆解它的语法。' }
-]);
-
-const onSend = async () => {
-  if (!input.value.trim() || isLoading.value) return;
-
-  const sentence = input.value;
-  chatHistory.value.push({ id: Date.now(), role: 'user', content: sentence });
-
-  isLoading.value = true;
-  input.value = '';
-
-  try {
-    // 调用 Gemini 进行句子分析
-    const currentLevel = userProfile.value?.english_level || 'A1'; // 获取等级
-    const result = await AiService.analyzeSentence(sentence, currentLevel);
-
-    chatHistory.value.push({
-      id: Date.now() + 1,
-      role: 'assistant',
-      type: 'analysis',
-      data: result
-    });
-  } catch (e) {
-    chatHistory.value.push({
-      id: Date.now() + 2,
-      role: 'assistant',
-      content: '分析失败，请检查网络或 API Key 状态。'
-    });
-  } finally {
-    isLoading.value = false;
-  }
-};
+import { useSentenceMode } from '../assets/viewsjs/useSentenceMode.js';
+const { input, isLoading, chatHistory, onSend } = useSentenceMode();
 </script>
 
 <style scoped>
-.msg-row {
-  margin-bottom: 20px;
-  display: flex;
-}
+.msg-row { margin-bottom: 20px; display: flex; }
 .msg-row.user { justify-content: flex-end; }
-.bubble {
-  max-width: 70%;
-  padding: 12px 16px;
-  border-radius: 12px;
-}
+.bubble { max-width: 70%; padding: 12px 16px; border-radius: 12px; }
 .user .bubble { background-color: var(--bg-user-msg); }
 .assistant .bubble { background-color: var(--bg-surface); border: 1px solid var(--border-color); }
 
-/* 句子解析专属卡片 */
 .sentence-card {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -118,48 +72,10 @@ const onSend = async () => {
   width: 100%;
   max-width: 700px;
 }
-
-.section {
-  margin-bottom: 15px;
-}
-
-.section label {
-  font-size: 0.85em;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  display: block;
-  margin-bottom: 5px;
-}
-
-.trans-text {
-  font-size: 1.1em;
-  color: var(--primary-color);
-  margin: 0;
-}
-
-.structure-code {
-  display: block;
-  background-color: rgba(0,0,0,0.1);
-  padding: 10px;
-  border-radius: 6px;
-  font-family: monospace;
-  color: var(--text-main);
-}
-html[data-theme="light"] .structure-code {
-  background-color: #f4f4f4; /* 白天模式代码块背景 */
-}
-
-.grammar-list {
-  margin: 0;
-  padding-left: 20px;
-  color: var(--text-main);
-}
-
-.private-note-box {
-  margin-top: 15px;
-  padding: 10px;
-  border-left: 4px solid var(--primary-color);
-  background-color: var(--bg-app);
-}
+.section { margin-bottom: 15px; }
+.section label { font-size: 0.85em; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 5px; }
+.trans-text { font-size: 1.1em; color: var(--primary-color); margin: 0; }
+.structure-code { display: block; background-color: rgba(0,0,0,0.1); padding: 10px; border-radius: 6px; font-family: monospace; }
+.grammar-list { margin: 0; padding-left: 20px; }
+.private-note-box { margin-top: 15px; padding: 10px; border-left: 4px solid var(--primary-color); background-color: var(--bg-app); }
 </style>
