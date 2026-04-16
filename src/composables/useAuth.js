@@ -27,15 +27,20 @@ export function useAuth() {
 
     //监听登录状态  &&  调用fetchProfile获取用户资料
     const initializeAuth = async () => {
-        const {data: { session }} = await supabase.auth.getSession()
-        currentUser.value = session?.user || null;
-        if (currentUser.value) await  fetchProfile();
-
-        supabase.auth.onAuthStateChange(async (_event, session) => {
+        try {
+            const {data: {session}} = await supabase.auth.getSession()
             currentUser.value = session?.user || null;
             if (currentUser.value) await fetchProfile();
-            else userProfile.value = null;
-        })
+
+            supabase.auth.onAuthStateChange(async (_event, session) => {
+                currentUser.value = session?.user || null;
+                if (currentUser.value) await fetchProfile();
+                else userProfile.value = null;
+            })
+        } catch (error) {
+            await supabase.auth.signOut();
+            currentUser.value = null;
+        }
     }
 
     const fetchProfile = async () => {
@@ -44,7 +49,7 @@ export function useAuth() {
         }
 
         const { data, error } = await supabase
-            .from('profile')
+            .from('profiles')
             .select('*')
             .eq('id', currentUser.value.id)
             .single();

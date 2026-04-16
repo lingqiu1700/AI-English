@@ -1,45 +1,59 @@
 // src/services/ai.js
 
 export const AiService = {
+    // 核心逻辑：带重试机制的请求
+    async callProxy(payload, useFallback = true) {
+        const currentProvider = payload.provider || localStorage.getItem('ai_provider') || 'gemini';
 
-    async callProxy(payload) {
-        const res = await fetch("/.netlify/functions/gemini-proxy", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
+        try {
+            const res = await fetch("/.netlify/functions/ai-proxy", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...payload, provider: currentProvider })
+            });
 
-        if (!res.ok) throw new Error("服务器代理请求失败");
+            // 如果 Gemini 报错 (503/500/429) 且允许重试
+            if (!res.ok && currentProvider === 'gemini' && useFallback) {
+                console.warn("Gemini 暂时不可用，正在切换至通义千问...");
+                return this.callProxy({ ...payload, provider: 'qwen' }, false);
+            }
 
-        const result = await res.json();
-        // 关键：这里需要处理可能的 Markdown 包裹
-        const cleanJsonText = result.data.replace(/```json|```/g, "").trim();
-        return JSON.parse(cleanJsonText);
+            if (!res.ok) throw new Error("AI 服务请求失败");
+
+            const result = await res.json();
+            let cleanText = result.data.replace(/```json\n?|```/g, "").trim();
+            let parsed = JSON.parse(cleanText);
+
+            // 关键：如果 parsed 内部还有一个 data 字符串（如千问有时会这么做）
+            if (typeof parsed.data === 'string' && parsed.data.startsWith('{')) {
+                try {
+                    const nestedData = JSON.parse(parsed.data.replace(/'/g, '"')); // 处理单引号问题
+                    parsed = { ...parsed, ...nestedData };
+                } catch (e) {
+                    console.warn("二次解析嵌套数据失败");
+                }
+            }
+
+            return parsed;
+
+        } catch (error) {
+            // 如果 Qwen 也挂了，才彻底报错
+            if (currentProvider === 'qwen') throw error;
+            // 否则尝试用 Qwen 救场
+            return this.callProxy({ ...payload, provider: 'qwen' }, false);
+        }
     },
 
-    // 增加 level 参数
+    // 以下方法保持接口不变，内部逻辑自动享受自动切换
     async analyzeWord(word, dictData, level = 'A1') {
-        const prompt = `分析单词: "${word}"。参考数据: ${JSON.stringify(dictData)}。`;
-        return this.callProxy({
-            mode: "analyze",
-            prompt,
-            level // 将等级传给后端
-        });
+        return this.callProxy({ mode: "analyze", prompt: `分析单词: ${word}`, level });
     },
 
-    // src/services/ai.js
     async analyzeSentence(sentence, level = 'A1') {
-        const prompt = `请分析句子: "${sentence}"。
-    要求：返回 JSON 格式，包含 trans (中文翻译), structure (结构说明), grammar (语法点列表)。`;
-        return this.callProxy({ mode: "analyze", prompt, level });
+        return this.callProxy({ mode: "analyze", prompt: `分析句子: ${sentence}`, level });
     },
 
     async chatAdaptive(history, userInput, level = 'A1') {
-        return this.callProxy({
-            mode: "chat",
-            prompt: userInput,
-            history: history,
-            level
-        });
+        return this.callProxy({ mode: "chat", prompt: userInput, history, level });
     }
 };

@@ -9,6 +9,9 @@ const { signOut } = useAuth();
 // 主题切换逻辑
 const isLight = ref(false);
 
+const selectedProvider = ref(localStorage.getItem('ai_provider') || 'gemini');
+const saveProvider = () => localStorage.setItem('ai_provider', selectedProvider.value);
+
 const toggleTheme = () => {
   isLight.value = !isLight.value;
   if (isLight.value) {
@@ -34,6 +37,13 @@ const toggleTheme = () => {
         <router-link to="/word" class="nav-item">🔤 单词模式</router-link>
         <router-link to="/sentence" class="nav-item">📝 句子分析</router-link>
         <router-link to="/chat" class="nav-item">💬 对话训练</router-link>
+        <div class="model-selector">
+          <label>模型选择：</label>
+          <select v-model="selectedProvider" @change="saveProvider">
+            <option value="gemini">Google Gemini (推荐)</option>
+            <option value="qwen">通义千问 (稳定)</option>
+          </select>
+        </div>
       </nav>
 
       <div class="sidebar-footer">

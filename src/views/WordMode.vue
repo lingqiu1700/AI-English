@@ -1,58 +1,14 @@
 <script setup>
-import { ref } from 'vue';
-import { AiService } from '../services/ai.js';
-import { userProfile } from '../composables/useAuth';
+import {useWordMode} from "../assets/viewsjs/useWordMode.js";
 
-const input = ref('');
-const isLoading = ref(false);
-const chatHistory = ref([{ id: 1, role: 'assistant', content: '请输入你想学习的单词。', type: 'text' }]);
-
-// 权威词典 API
-async function fetchStandardDict(word) {
-  const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
-  if (!res.ok) return null;
-  const data = await res.json();
-  return {
-    phonetic: data[0].phonetic,
-    pos: data[0].meanings[0].partOfSpeech,
-    baseDef: data[0].meanings[0].definitions[0].definition
-  };
-}
-
-const onSend = async () => {
-  if (!input.value.trim() || isLoading.value) return;
-
-  const word = input.value;
-  chatHistory.value.push({ id: Date.now(), role: 'user', content: word, type: 'text' });
-
-  isLoading.value = true;
-  input.value = '';
-
-  try {
-    const dictData = await fetchStandardDict(word);
-    const currentLevel = userProfile.value?.english_level || 'A1';
-    const aiResult = await AiService.analyzeWord(word, dictData, currentLevel);
-
-    chatHistory.value.push({
-      id: Date.now() + 1,
-      role: 'assistant',
-      type: 'card',
-      data: {
-        word: word,
-        phonetic: aiResult.phonetic || dictData?.phonetic,
-        pos: aiResult.pos || dictData?.pos,
-        definitions: aiResult.chinese_meanings,
-        mnemonic: aiResult.mnemonic,
-        examples: aiResult.examples
-      }
-    });
-  } catch (e) {
-    console.error(e);
-    chatHistory.value.push({ id: Date.now() + 2, role: 'assistant', content: '抱歉，AI 解析失败，请检查 .env 配置或网络。', type: 'text' });
-  } finally {
-    isLoading.value = false;
-  }
-};
+const {
+  input,
+  isLoading,
+  chatHistory,
+  onSend,
+  isCollected,
+  toggleCollect
+} = useWordMode();
 </script>
 
 <template>
@@ -64,27 +20,47 @@ const onSend = async () => {
         </div>
 
         <div v-else-if="msg.type === 'card'" class="card">
-          <h2 style="color: var(--primary-green)">{{ msg.data.word }} <small>{{ msg.data.phonetic }}</small></h2>
-          <p style="margin: 5px 0; color: #888;">{{ msg.data.pos }}</p>
+          <div class="card-header">
+            <h2>
+              <span>{{ msg.data.word }} <small>{{ msg.data.phonetic }}</small></span>
+              <button
+                  @click="toggleCollect(msg.data)"
+                  class="collect-btn"
+                  :class="{ 'active': isCollected(msg.data.word) }"
+              >
+                {{ isCollected(msg.data.word) ? '★ 已收藏' : '☆ 收藏' }}
+              </button>
+            </h2>
+            <p class="pos-tag">{{ msg.data.pos }}</p>
+          </div>
+
           <div class="content-section">
             <strong>中文释义：</strong>
-            <div v-for="def in msg.data.definitions" :key="def">{{ def }}</div>
+            <div v-for="def in msg.data.definitions" :key="def" class="def-item">{{ def }}</div>
           </div>
-          <div v-if="msg.data.mnemonic" class="mnemonic-box" style="margin-top: 10px; padding: 10px; background: rgba(66, 184, 131, 0.1); border-radius: 8px;">
+
+          <div v-if="msg.data.mnemonic" class="mnemonic-box">
             <strong>💡 助记：</strong> {{ msg.data.mnemonic }}
           </div>
         </div>
       </div>
 
       <div v-if="isLoading" class="msg-row assistant">
-        <div class="bubble">AI 正在查阅词典并分析中...</div>
+        <div class="bubble typing">AI 正在查阅词典并分析中...</div>
       </div>
     </div>
 
     <div class="input-area">
       <div class="input-box">
-        <input v-model="input" placeholder="输入单词以获取详细解释..." @keyup.enter="onSend" />
-        <button @click="onSend" :disabled="isLoading">搜索</button>
+        <input
+            v-model="input"
+            placeholder="输入单词以获取详细解释..."
+            @keyup.enter="onSend"
+            :disabled="isLoading"
+        />
+        <button @click="onSend" :disabled="isLoading">
+          {{ isLoading ? '...' : '搜索' }}
+        </button>
       </div>
     </div>
   </div>
@@ -150,5 +126,40 @@ const onSend = async () => {
 html[data-theme="light"] .mnemonic-box {
   background-color: #f9f9f9;
   border-color: #eeeeee;
+}
+
+.card-header h2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0;
+}
+
+.collect-btn {
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.collect-btn.active {
+  color: #ffb800;
+  border-color: #ffb800;
+  background: rgba(255, 184, 0, 0.05);
+}
+
+.pos-tag {
+  margin: 5px 0;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.def-item {
+  margin: 4px 0;
+  color: var(--text-main);
 }
 </style>

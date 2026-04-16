@@ -1,7 +1,7 @@
 <template>
   <div class="view-wrapper">
-    <header class="chat-status-bar" v-if="detectedLevel">
-      <span class="level-badge">当前推断水平: {{ detectedLevel }}</span>
+    <header class="chat-status-bar">
+      <span class="level-badge">当前能力评估: {{ userProfile?.english_level || 'A1' }}</span>
     </header>
 
     <div class="chat-window" ref="chatBox">
@@ -12,24 +12,18 @@
           </div>
           <div class="bubble">{{ msg.content }}</div>
         </div>
-
         <div v-else class="bubble">{{ msg.content }}</div>
       </div>
 
       <div v-if="isLoading" class="msg-row assistant">
-        <div class="bubble typing">AI 正在评估你的水平并做出相应的回答...</div>
+        <div class="bubble typing">AI 正在评估你的表达...</div>
       </div>
     </div>
 
     <div class="input-area">
       <div class="input-box">
-        <input
-            v-model="input"
-            placeholder="Type in English to start chatting..."
-            @keyup.enter="onSend"
-            :disabled="isLoading"
-        />
-        <button @click="onSend" :disabled="isLoading">Chat</button>
+        <input v-model="input" @keyup.enter="onSend" placeholder="用英文回复..." />
+        <button @click="onSend" :disabled="isLoading">发送</button>
       </div>
     </div>
   </div>
@@ -37,71 +31,33 @@
 
 
 <script setup>
-import { ref, nextTick } from 'vue';
-import { AiService } from '../services/ai.js';
+import { useChatMode } from '../assets/viewsjs/useChatMode.js';
 import { userProfile } from '../composables/useAuth';
 
-const input = ref('');
-const isLoading = ref(false);
-const detectedLevel = ref('');
-const chatBox = ref(null);
-const chatHistory = ref([
-  { id: 1, role: 'assistant', content: "Hello! I'm your English tutor. What would you like to talk about today?", feedback: '' }
-]);
-
-const scrollToBottom = async () => {
-  await nextTick();
-  if (chatBox.value) {
-    chatBox.value.scrollTop = chatBox.value.scrollHeight;
-  }
-};
-
-// src/views/ChatMode.vue 内部的 onSend 函数
-
-const onSend = async () => {
-  if (!input.value.trim() || isLoading.value) return;
-
-  const text = input.value;
-
-  // 1. 先提取【过去】的历史记录（不含当前这一条）
-  const historyForAi = chatHistory.value.slice(-5).map(m => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: m.content }]
-  }));
-
-  // 2. 然后再把当前消息显示在 UI 上
-  chatHistory.value.push({ id: Date.now(), role: 'user', content: text });
-
-  isLoading.value = true;
-  input.value = '';
-  await scrollToBottom();
-
-  try {
-    // 3. 传递给 AI：过去的历史 + 当前的内容
-    // 注意：ai.js 内部已经做了角色映射，这里可以直接传简化后的数据
-    const currentLevel = userProfile.value?.english_level || 'A1'; // 获取等级
-    const result = await AiService.chatAdaptive(historyForAi, text, currentLevel);
-
-    detectedLevel.value = result.detected_level;
-
-    chatHistory.value.push({
-      id: Date.now() + 1,
-      role: 'assistant',
-      content: result.reply,
-      feedback: result.feedback
-    });
-  } catch (e) {
-    console.error("Chat Error:", e);
-    chatHistory.value.push({
-      id: Date.now() + 2,
-      role: 'assistant',
-      content: "抱歉，由于 API Key 配置或网络问题，连接失败。",
-      feedback: ''
-    });
-  } finally {
-    isLoading.value = false;
-    await scrollToBottom();
-  }
-};
+const { input, isLoading, chatHistory, chatBox, onSend } = useChatMode();
 </script>
 
+<style scoped>
+.chat-status-bar {
+  padding: 10px 20px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+}
+.level-badge {
+  background: var(--primary-green);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+.grammar-feedback {
+  background: rgba(255, 184, 0, 0.1);
+  border-left: 3px solid #ffb800;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+</style>
