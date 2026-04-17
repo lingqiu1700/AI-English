@@ -44,7 +44,7 @@ const { input, isLoading, chatHistory, chatBox, onSend } = useChatMode();
   border-bottom: 1px solid var(--border-color);
 }
 .level-badge {
-  background: var(--primary-green);
+  background: var(--primary-color);
   color: white;
   padding: 4px 12px;
   border-radius: 20px;

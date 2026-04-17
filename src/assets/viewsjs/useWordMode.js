@@ -28,6 +28,7 @@ export function useWordMode() {
             if (error) throw error;
             if (data) chatHistory.value = data.map(m => ({
                 ...m,
+                content: m.role === 'user' ? (m.content.text || m.content) : m.content.text || m.content,
                 data: m.content
             }));
         } catch (err) {
@@ -94,7 +95,7 @@ export function useWordMode() {
             const { data: aiMsg, error: dbError } = await supabase.from('chat_messages').insert({
                 session_id: currentSessionId.value,
                 role: 'assistant',
-                content: cardData,
+                content: cardData, // 存入卡片 JSON 对象
                 type: 'card'
             }).select().single();
 
@@ -104,7 +105,8 @@ export function useWordMode() {
             chatHistory.value.push({
                 ...aiMsg,
                 type: 'card',
-                data: cardData
+                data: cardData,
+                content: '' // 单词卡片不需要显示文本内容，模板会渲染 msg.data
             });
 
         } catch (e) {
