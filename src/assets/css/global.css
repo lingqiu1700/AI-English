@@ -1,43 +1,61 @@
-/* src/assets/css/global.css */
-:root, [data-theme="dark"] {
-    --bg-app: #121212;
-    --bg-sidebar: #1e1e1e;
-    --bg-surface: #252525;
-    --primary-color: #42b883;
-    --primary-hover: #33a06f;
-    --text-main: #e0e0e0;
-    --text-muted: #888;
-    --border-color: #333;
-    --bg-user-msg: #2c3e50;
-    --transition-speed: 0.3s;
+:root,
+[data-theme='dark'] {
+  --bg-app: #111318;
+  --bg-sidebar: #181b22;
+  --bg-surface: #20242d;
+  --bg-soft: #272d38;
+  --primary-color: #42b883;
+  --primary-hover: #32a06f;
+  --danger-color: #ef5b5b;
+  --text-main: #edf1f7;
+  --text-muted: #9da7b5;
+  --border-color: #303644;
+  --bg-user-msg: #2f6f57;
+  --shadow-soft: 0 14px 36px rgba(0, 0, 0, 0.22);
+  --transition-speed: 0.2s;
 }
 
-[data-theme="light"] {
-    --bg-app: #f5f7f9;
-    --bg-sidebar: #ffffff;
-    --bg-surface: #ffffff;
-    --primary-color: #42b883;
-    --primary-hover: #33a06f;
-    --text-main: #2c3e50;
-    --text-muted: #7f8c8d;
-    --border-color: #e0e4e8;
-    --bg-user-msg: #e8f5e9;
-}
-
-body {
-    background-color: var(--bg-app);
-    color: var(--text-main);
-    transition: background-color var(--transition-speed), color var(--transition-speed);
+[data-theme='light'] {
+  --bg-app: #f5f7fb;
+  --bg-sidebar: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-soft: #edf2f7;
+  --primary-color: #248f66;
+  --primary-hover: #1c7554;
+  --danger-color: #d64545;
+  --text-main: #1f2937;
+  --text-muted: #667085;
+  --border-color: #d9e1ea;
+  --bg-user-msg: #dcf7ec;
+  --shadow-soft: 0 14px 36px rgba(16, 24, 40, 0.08);
 }
 
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box; /* 👈 关键：确保内边距不撑开容器 */
+  box-sizing: border-box;
 }
 
-html, body, #app {
-    height: 100%;
-    width: 100%;
-    overflow: hidden; /* 👈 强制禁止最外层出现滚动条 */
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  color: var(--text-main);
+  background: var(--bg-app);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
 }

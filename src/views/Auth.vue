@@ -1,81 +1,90 @@
 <template>
-  <div class="view-wrapper auth-container">
-    <div class="card auth-card">
-      <h2 class="auth-title">{{ isLogin ? '欢迎回来' : '开启学习之旅' }}</h2>
-      <p class="auth-subtitle">{{ isLogin ? '请登录你的 AI English 账号' : '创建一个账号以同步你的学习进度' }}</p>
+  <div class="view-wrapper page-shell auth-page">
+    <section class="panel auth-panel">
+      <div class="page-heading">
+        <p class="eyebrow">{{ isLogin ? 'Account login' : 'New learner' }}</p>
+        <h1>{{ isLogin ? '欢迎回来' : '创建 AI English 账号' }}</h1>
+        <p>{{ isLogin ? '登录后可同步学习记录、收藏单词和个人资料。' : '设置你的专属用户名，开始保存学习进度。' }}</p>
+      </div>
 
-      <form @submit.prevent="handleAuth" class="auth-form">
-        <div class="form-group">
-          <label>邮箱地址</label>
-          <input
-              v-model="email"
-              type="email"
-              placeholder="your@email.com"
-              required
-              :disabled="loading"
-          />
-        </div>
+      <form class="form-grid" @submit.prevent="handleAuth">
+        <label v-if="!isLogin" class="form-field">
+          <span>用户名</span>
+          <input v-model.trim="username" type="text" minlength="3" maxlength="24" placeholder="例如: lily_english" :disabled="loading" required />
+        </label>
 
-        <div class="form-group">
-          <label>密码</label>
-          <input
-              v-model="password"
-              type="password"
-              placeholder="请输入密码"
-              required
-              :disabled="loading"
-          />
-        </div>
+        <label class="form-field">
+          <span>邮箱地址</span>
+          <input v-model.trim="email" type="email" placeholder="your@email.com" :disabled="loading" required />
+        </label>
 
-        <div v-if="errorMsg" class="error-banner">
-          ⚠️ {{ errorMsg }}
-        </div>
+        <label class="form-field">
+          <span>密码</span>
+          <input v-model="password" type="password" minlength="6" placeholder="至少 6 位密码" :disabled="loading" required />
+        </label>
 
-        <button type="submit" class="auth-btn" :disabled="loading">
-          <span v-if="loading">处理中...</span>
-          <span v-else>{{ isLogin ? '立即登录' : '注册账号' }}</span>
+        <p v-if="errorMsg" class="notice error">{{ errorMsg }}</p>
+        <p v-if="successMsg" class="notice success">{{ successMsg }}</p>
+
+        <button type="submit" class="primary-btn" :disabled="loading">
+          {{ loading ? '处理中...' : isLogin ? '登录' : '注册' }}
         </button>
       </form>
 
-      <div class="auth-footer">
+      <div class="switch-line">
         <span>{{ isLogin ? '还没有账号？' : '已经有账号了？' }}</span>
-        <a @click="isLogin = !isLogin">{{ isLogin ? '去注册' : '去登录' }}</a>
+        <button type="button" class="link-btn" @click="toggleMode">{{ isLogin ? '去注册' : '去登录' }}</button>
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuth } from '../composables/useAuth';
 
 const { signIn, signUp } = useAuth();
+const route = useRoute();
 const router = useRouter();
 
 const isLogin = ref(true);
+const username = ref('');
 const email = ref('');
 const password = ref('');
 const loading = ref(false);
 const errorMsg = ref('');
+const successMsg = ref('');
+
+const toggleMode = () => {
+  isLogin.value = !isLogin.value;
+  errorMsg.value = '';
+  successMsg.value = '';
+};
 
 const handleAuth = async () => {
   errorMsg.value = '';
+  successMsg.value = '';
   loading.value = true;
 
   try {
     if (isLogin.value) {
       await signIn(email.value, password.value);
-    } else {
-      await signUp(email.value, password.value);
-      alert('注册成功！请查收邮件确认（如果开启了邮件验证）或尝试登录。');
-      isLogin.value = true;
+      router.push(route.query.redirect || '/profile');
       return;
     }
-    // 登录成功后跳转到主页或之前的页面
-    router.push('/word');
+
+    const data = await signUp(email.value, password.value, username.value);
+    if (data.session) {
+      router.push('/profile');
+      return;
+    }
+
+    successMsg.value = '注册成功。如果项目开启了邮箱验证，请先完成邮件确认后再登录。';
+    isLogin.value = true;
+    password.value = '';
   } catch (err) {
-    errorMsg.value = err.message || '操作失败，请检查网络或输入';
+    errorMsg.value = err.message || '操作失败，请检查邮箱、密码或网络连接。';
   } finally {
     loading.value = false;
   }
@@ -83,95 +92,21 @@ const handleAuth = async () => {
 </script>
 
 <style scoped>
-.auth-container {
-  justify-content: center;
+.auth-page {
   align-items: center;
-  min-height: 80vh;
+  justify-content: center;
+  padding: 32px;
 }
 
-.auth-card {
-  width: 100%;
-  max-width: 400px;
-  padding: 40px;
-  text-align: left;
+.auth-panel {
+  width: min(440px, 100%);
 }
 
-.auth-title {
-  margin: 0 0 10px 0;
-  font-size: 1.8rem;
-  color: var(--primary-color);
-}
-
-.auth-subtitle {
+.switch-line {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 22px;
   color: var(--text-muted);
-  font-size: 0.9rem;
-  margin-bottom: 30px;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  font-size: 0.85rem;
-  margin-bottom: 8px;
-  color: var(--text-main);
-}
-
-.form-group input {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background-color: var(--bg-app);
-  color: var(--text-main);
-  box-sizing: border-box;
-}
-
-.auth-btn {
-  width: 100%;
-  padding: 14px;
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 10px;
-  transition: opacity 0.3s;
-}
-
-.auth-btn:hover {
-  opacity: 0.9;
-}
-
-.auth-btn:disabled {
-  background-color: var(--text-muted);
-  cursor: not-allowed;
-}
-
-.error-banner {
-  background-color: rgba(255, 0, 0, 0.1);
-  color: #ff4444;
-  padding: 10px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  margin-bottom: 20px;
-}
-
-.auth-footer {
-  margin-top: 25px;
-  text-align: center;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-}
-
-.auth-footer a {
-  color: var(--primary-color);
-  cursor: pointer;
-  margin-left: 8px;
-  text-decoration: underline;
 }
 </style>

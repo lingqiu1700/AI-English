@@ -54,5 +54,25 @@ export function useChatSession() {
         return null;
     };
 
-    return { sessions, currentSessionId, fetchSessions, createSession };
+    const deleteSession = async (sessionId) => {
+        if (!currentUser.value || !sessionId) return;
+
+        await supabase.from('chat_messages').delete().eq('session_id', sessionId);
+
+        const { error } = await supabase
+            .from('chat_sessions')
+            .delete()
+            .eq('id', sessionId)
+            .eq('user_id', currentUser.value.id);
+
+        if (error) {
+            console.error('删除会话失败:', error.message);
+            return;
+        }
+
+        sessions.value = sessions.value.filter((item) => item.id !== sessionId);
+        if (currentSessionId.value === sessionId) currentSessionId.value = null;
+    };
+
+    return { sessions, currentSessionId, fetchSessions, createSession, deleteSession };
 }

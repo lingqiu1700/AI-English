@@ -13,10 +13,12 @@ exports.handler = async (event) => {
         const sentenceInstruction = `你是一个语法专家。针对句子分析，必须严格返回以下 JSON：{"trans": "中文翻译", "structure": "句子成分拆解", "grammar": ["知识点1", "知识点2"], "private_note": "进阶提示"}`;
 
         const chatInstruction = `你是一个英语私教。等级：${level}。返回 JSON：{"reply": "...", "feedback": "...", "detected_level": "..."}`;
+        const gameHintInstruction = `You are helping with an English vocabulary game for a ${level} learner. Return strict JSON: {"hint":"一个简短、模糊的中文概念提示"}。提示不能直接说出答案的中文释义，不能包含英文单词本身，长度不超过18个汉字。`;
 
         let systemPrompt = chatInstruction;
         if (mode === 'word') systemPrompt = wordInstruction;
         if (mode === 'sentence') systemPrompt = sentenceInstruction;
+        if (mode === 'game_hint') systemPrompt = gameHintInstruction;
 
         if (provider === 'qwen') {
             const response = await fetch("https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", {

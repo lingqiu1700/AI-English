@@ -1,64 +1,135 @@
-.msg-row { display: flex; margin-bottom: 1.5rem; width: 100%; }
-.msg-row.user { justify-content: flex-end; }
+.panel,
+.card {
+  width: 100%;
+  padding: 22px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.msg-row {
+  display: flex;
+  width: 100%;
+  margin-bottom: 18px;
+}
+
+.msg-row.user {
+  justify-content: flex-end;
+}
 
 .bubble {
-    max-width: 80%;
-    padding: 12px 16px;
-    border-radius: 12px;
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    color: var(--text-main);
-    line-height: 1.6;
+  max-width: min(720px, 78%);
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--text-main);
+  background: var(--bg-surface);
+  line-height: 1.6;
 }
 
 .user .bubble {
-    background-color: var(--primary-color);
-    color: #ffffff;
-    border: none;
+  border: 0;
+  background: var(--bg-user-msg);
 }
 
-/* 卡片样式 */
-.card {
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.5rem;
-    width: 100%;
-    border-left: 4px solid var(--primary-color);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+.form-grid {
+  display: grid;
+  gap: 16px;
 }
 
-/* 输入框区域 */
-.input-area {
-    width: 100%;
-    padding: 1.5rem;
-    background: var(--bg-sidebar);
-    border-top: 1px solid var(--border-color);
+.form-field {
+  display: grid;
+  gap: 8px;
 }
 
-.input-box {
-    width: 100%;
-    max-width: 1000px;
-    margin: 0 auto;
-    display: flex;
-    gap: 1rem;
+.form-field span {
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
-input {
-    min-width: 0;
-    flex: 1;
-    background: #121212;
-    border: 1px solid var(--border-color);
-    padding: 12px;
-    color: white;
-    border-radius: 8px;
+.primary-btn,
+.ghost-btn,
+.theme-toggle-btn,
+.link-btn,
+.input-box button {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  transition: background var(--transition-speed), border-color var(--transition-speed), color var(--transition-speed), opacity var(--transition-speed);
 }
 
-button {
-    padding: 0 20px;
-    background: var(--primary-color);
-    border: none;
-    border-radius: 8px;
-    color: white;
-    cursor: pointer;
+.primary-btn,
+.input-box button {
+  color: white;
+  background: var(--primary-color);
+}
+
+.primary-btn:hover:not(:disabled),
+.input-box button:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.ghost-btn,
+.theme-toggle-btn {
+  color: var(--text-main);
+  border-color: var(--border-color);
+  background: var(--bg-surface);
+}
+
+.ghost-btn:hover,
+.theme-toggle-btn:hover {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.danger {
+  color: var(--danger-color);
+}
+
+.danger:hover {
+  border-color: var(--danger-color);
+  color: var(--danger-color);
+}
+
+.link-btn {
+  min-height: auto;
+  padding: 0;
+  color: var(--primary-color);
+  background: transparent;
+}
+
+.primary-btn:disabled,
+.input-box button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.notice {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.notice.error {
+  color: #ffd7d7;
+  background: color-mix(in srgb, var(--danger-color) 18%, transparent);
+}
+
+.notice.success {
+  color: var(--text-main);
+  background: color-mix(in srgb, var(--primary-color) 18%, transparent);
+}
+
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.typing {
+  color: var(--text-muted);
 }

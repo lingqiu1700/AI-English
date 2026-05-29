@@ -56,5 +56,13 @@ export const AiService = {
 
     async chatAdaptive(history, userInput, level = 'A1', signal = null) {
         return this.callProxy({ mode: "chat", prompt: userInput, history, level }, true, signal);
+    },
+
+    async generateGameHint(word, meaning, level = 'A1') {
+        return this.callProxy({
+            mode: "game_hint",
+            prompt: `给英语单词 "${word}" 生成一个模糊中文概念提示。不要直接出现中文释义"${meaning}"，不要出现英文单词本身。`,
+            level
+        }, true);
     }
 };
